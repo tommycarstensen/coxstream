@@ -1,6 +1,6 @@
 # coxstream
 
-**Exact out-of-core Cox proportional hazards regression by streaming
+**Exact out-of-core Cox proportional hazards regression via streaming
 Newton-Raphson.**
 
 [![PyPI](https://img.shields.io/pypi/v/coxstream.svg)](https://pypi.org/project/coxstream/)
@@ -19,6 +19,13 @@ the model fits on a workstation even when the cohort is far larger than RAM.
 The streamed estimate *is* the in-memory maximum-likelihood estimate, and the
 Efron tie correction is carried across chunk boundaries, so heavily tied data
 are handled exactly.
+
+![coxstream holds peak RAM flat as the cohort grows, while in-memory solvers (lifelines, R survival::coxph) scale with n; coefficients agree to machine precision.](https://raw.githubusercontent.com/tommycarstensen/coxstream/main/docs/benchmark.png)
+
+*Memory vs. speed against `lifelines` and R `survival::coxph`: coxstream's peak
+RAM stays flat in the number of rows while in-memory solvers grow with the
+cohort, at matching coefficients. See the accompanying paper for the full
+methodology.*
 
 ## Install
 
