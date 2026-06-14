@@ -4,9 +4,7 @@
 Newton-Raphson.**
 
 [![PyPI](https://img.shields.io/pypi/v/coxstream.svg)](https://pypi.org/project/coxstream/)
-<!-- DOI badge: uncomment once the Zenodo record exists.
-[![DOI](https://zenodo.org/badge/DOI/TODO.svg)](https://doi.org/TODO)
--->
+[![DOI](https://zenodo.org/badge/1269530910.svg)](https://doi.org/10.5281/zenodo.20693783)
 
 Standard CoxPH solvers (`lifelines`, `scikit-survival`, R `survival`) load the
 full cohort into memory before fitting, so on registry-scale data they exhaust

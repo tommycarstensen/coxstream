@@ -14,12 +14,15 @@ authors:
     affiliation: "Benros Research Group"
     email: "zenodo@tommycarstensen.com"
 version: "0.1.0"
-date-released: "2026-06-13"
+date-released: "2026-06-14"
 license: MIT
 repository-code: "https://github.com/tommycarstensen/coxstream"
 url: "https://github.com/tommycarstensen/coxstream"
-# doi: set once the Zenodo record exists (PyPI publish precedes Zenodo).
-# doi: "10.5281/zenodo.TODO"
+doi: "10.5281/zenodo.20693784"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20693783"
+    description: "Concept DOI (resolves to the latest version)"
 keywords:
   - survival analysis
   - Cox proportional hazards
