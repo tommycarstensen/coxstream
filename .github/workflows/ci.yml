@@ -1,0 +1,37 @@
+name: CI
+
+# Activates once coxstream is its own repository (GitHub runs workflows only
+# from .github/workflows/ at the repository root). In this monorepo it lives
+# under packages/coxstream/ so it travels with the package when split out.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install (compiles the Cython kernel) with test + parquet extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e '.[test,parquet]'
+
+      - name: Lint
+        run: |
+          pip install ruff
+          ruff check .
+
+      - name: Test
+        run: pytest -q

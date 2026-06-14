@@ -1,0 +1,23 @@
+{
+  "title": "coxstream: Exact out-of-core Cox proportional hazards regression via streaming Newton-Raphson",
+  "description": "coxstream fits the Cox proportional hazards model on datasets larger than RAM. It computes the exact Efron partial-likelihood estimate by streaming a single time-sorted pass over chunked data per Newton-Raphson iteration, with O(p^2) working memory independent of the number of observations. The streamed estimate reproduces the in-memory maximum-likelihood estimate to machine precision, and the Efron tie correction is carried across chunk boundaries.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Carstensen, Tommy",
+      "orcid": "0000-0002-3672-9931",
+      "affiliation": "Benros Research Group"
+    }
+  ],
+  "version": "0.1.0",
+  "keywords": [
+    "survival analysis",
+    "Cox proportional hazards",
+    "out-of-core",
+    "streaming",
+    "epidemiology",
+    "registry data"
+  ],
+  "access_right": "open"
+}
