@@ -15,4 +15,4 @@ check_sorted
 from coxstream.coxstream import CoxStream, check_sorted
 
 __all__ = ["CoxStream", "check_sorted"]
-__version__ = "0.1.0"
+__version__ = "0.1.1"

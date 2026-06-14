@@ -13,16 +13,18 @@ authors:
     orcid: "https://orcid.org/0000-0002-3672-9931"
     affiliation: "Benros Research Group"
     email: "zenodo@tommycarstensen.com"
-version: "0.1.0"
-date-released: "2026-06-14"
+version: "0.1.1"
+date-released: "2026-06-15"
 license: MIT
 repository-code: "https://github.com/tommycarstensen/coxstream"
 url: "https://github.com/tommycarstensen/coxstream"
-doi: "10.5281/zenodo.20693784"
+# Concept DOI: always resolves to the latest version, so it need not change
+# per release. Version-specific DOIs are listed under identifiers.
+doi: "10.5281/zenodo.20693783"
 identifiers:
   - type: doi
-    value: "10.5281/zenodo.20693783"
-    description: "Concept DOI (resolves to the latest version)"
+    value: "10.5281/zenodo.20693784"
+    description: "Version DOI for v0.1.0"
 keywords:
   - survival analysis
   - Cox proportional hazards
