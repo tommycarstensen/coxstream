@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22.0
+        uses: pypa/cibuildwheel@v4.1.0
         env:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux_* *_i686 *-win32"
@@ -74,3 +74,8 @@ jobs:
           path: dist
           merge-multiple: true
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # Skip files already on PyPI for this version, so re-runs that add
+          # wheels for a newly supported Python (e.g. cp314) upload only the
+          # new files instead of failing on the existing ones.
+          skip-existing: true
