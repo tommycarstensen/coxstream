@@ -16,16 +16,20 @@ name: Release
 on:
   release:
     types: [published]
+  workflow_dispatch:  # allow manual re-runs without recreating the release
 
 jobs:
   build_wheels:
     name: Wheels (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 90  # fail fast if a runner never frees up (was a 24h hang)
     strategy:
       fail-fast: false
       matrix:
-        # Native runners for every wheel arch -- no QEMU/cross-compile.
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-13, macos-14, windows-latest]
+        # Native runners only. macOS builds a single universal2 wheel on the
+        # arm runner (covers Intel + Apple Silicon) so we never depend on the
+        # scarce macos-13 Intel runner, which hung in the queue for 24h.
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
     steps:
       - uses: actions/checkout@v4
 
@@ -35,6 +39,7 @@ jobs:
           CIBW_BUILD: "cp310-* cp311-* cp312-* cp313-* cp314-*"
           CIBW_SKIP: "*-musllinux_* *_i686 *-win32"
           CIBW_ARCHS: "auto64"
+          CIBW_ARCHS_MACOS: "universal2"
 
       - uses: actions/upload-artifact@v4
         with:
