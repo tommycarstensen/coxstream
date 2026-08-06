@@ -133,16 +133,44 @@ class CoxStream:
     # ------------------------------------------------------------------
     # Public API
     # ------------------------------------------------------------------
-    def fit(self, durations, events, X, feature_names=None) -> "CoxStream":
+    def fit(self, durations=None, events=None, X=None, feature_names=None,
+            *, start=None, stop=None) -> "CoxStream":
         """Fit from in-memory arrays.
+
+        Provide the follow-up time either directly as ``durations`` or as a
+        ``start``/``stop`` pair, in which case the duration is ``stop - start``.
+        This is right-censored follow-up only -- it is *not* the left-truncation
+        / counting-process model; entry times are not part of the risk set. The
+        arrays are sorted by descending duration internally, so the input order
+        is free.
 
         Parameters
         ----------
-        durations : array-like, shape (n,)
+        durations : array-like, shape (n,), optional
+            Follow-up time. Provide this, or ``start`` and ``stop``.
         events : array-like, shape (n,)   (1 = event, 0 = censored)
         X : array-like, shape (n, p)
         feature_names : sequence[str], optional
+        start, stop : array-like, shape (n,), optional
+            Interval endpoints; the duration is ``stop - start``. Mutually
+            exclusive with ``durations``.
         """
+        if durations is None:
+            if start is None or stop is None:
+                raise ValueError(
+                    "provide either durations, or both start and stop")
+            start = np.ascontiguousarray(start, dtype=np.float64).ravel()
+            stop = np.ascontiguousarray(stop, dtype=np.float64).ravel()
+            if len(start) != len(stop):
+                raise ValueError("start and stop must share length")
+            durations = stop - start
+            if np.any(durations < 0.0):
+                raise ValueError(
+                    "stop must be >= start; negative durations found")
+        elif start is not None or stop is not None:
+            raise ValueError("pass either durations or start/stop, not both")
+        if events is None or X is None:
+            raise ValueError("events and X are required")
         t = np.ascontiguousarray(durations, dtype=np.float64).ravel()
         e = np.ascontiguousarray(events, dtype=np.int32).ravel()
         X = np.ascontiguousarray(X, dtype=np.float64)
@@ -201,8 +229,9 @@ class CoxStream:
         :meth:`fit`, which sorts the arrays internally. Requires the ``parquet``
         extra.
 
-        The file is streamed in ``batch_size`` row chunks per Newton-Raphson
-        iteration; the cohort is never held in full.
+        The file is streamed one row group at a time per Newton-Raphson
+        iteration; the cohort is never held in full. Peak memory is
+        O(row_group * p), so write the parquet with modest row groups.
 
         Parameters
         ----------
@@ -224,10 +253,18 @@ class CoxStream:
         if not assume_sorted:
             _assert_desc_sorted(pf, duration_col)
 
+        want = [duration_col, event_col, *cov]
+
         def _batches_t():
-            for batch in pf.iter_batches(
-                self.batch_size, columns=[duration_col, event_col, *cov]
-            ):
+            # Stream one row group at a time via read_row_group, NOT
+            # iter_batches: iter_batches read-aheads and buffers proportional to
+            # the file size, so peak RSS grows with n and defeats out-of-core
+            # fitting. Reading row groups individually keeps peak at
+            # O(row_group * p), independent of n (verified flat to 32M rows).
+            # Peak is therefore set by the input's largest row group -- write
+            # the sorted parquet with modest row groups.
+            for rg in range(pf.metadata.num_row_groups):
+                batch = pf.read_row_group(rg, columns=want)
                 t_b = np.ascontiguousarray(
                     batch[duration_col].to_numpy(zero_copy_only=False)
                     .astype(np.float64))

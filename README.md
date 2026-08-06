@@ -32,7 +32,10 @@ pip install coxstream             # core (numpy only)
 pip install coxstream[parquet]    # + out-of-core fit_parquet (pyarrow)
 ```
 
-The package builds a small Cython kernel, so a C compiler is required.
+Prebuilt wheels are published for current CPython versions on Linux (x86_64,
+aarch64), macOS (universal2), and Windows, so most installs need no toolchain.
+A C compiler is only needed when building from the sdist (e.g. on a platform
+without a wheel), since the package compiles a small Cython kernel.
 
 ## Usage
 
@@ -44,6 +47,14 @@ from coxstream import CoxStream
 
 model = CoxStream().fit(durations, events, X, feature_names=names)
 print(model.coef_, model.n_iter_)
+```
+
+If your cohort records interval endpoints rather than a precomputed follow-up
+time, pass `start`/`stop` and the duration is `stop - start` (right-censored
+follow-up; entry times are not modelled):
+
+```python
+model = CoxStream().fit(start=entry, stop=exit, events=events, X=X)
 ```
 
 Out of core, from a Parquet file **pre-sorted by descending event time** (never
@@ -99,8 +110,8 @@ python -c "import coxstream; coxstream.check_sorted('cohort_desc.parquet', 'dura
 
 - It reproduces the in-memory maximum-likelihood estimate to **machine
   precision** on synthetic data.
-- On the heavily tied Synthea 100K cohort (51 % of event times tied) it matches
-  `lifelines` to ~`1e-6`.
+- On heavily tied synthetic data (monthly-discretised event times) the exact
+  Efron pass matches `lifelines` where the Breslow approximation would diverge.
 - Peak resident memory is flat in `n` while in-memory solvers grow with the
   cohort and eventually exhaust RAM.
 

@@ -6,6 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2026-08-05
+
+### Added
+
+- `CoxStream.fit` now accepts the follow-up time as a `start`/`stop` pair
+  (`durations = stop - start`) as an alternative to a precomputed `durations`
+  array, matching the ergonomics of survival packages that take interval
+  endpoints. This is right-censored follow-up only: entry times are not modelled
+  (no left-truncation / counting-process risk sets).
+
+### Fixed
+
+- `fit_parquet` now streams the parquet one row group at a time
+  (`read_row_group`) instead of `pyarrow.iter_batches`. `iter_batches`
+  read-ahead-buffers proportional to the file size, so peak RSS grew with the
+  number of rows -- which defeats the whole point of out-of-core fitting (on a
+  Linux VM the footprint climbed from ~0.4 GB toward the full-file size as n
+  grew; macOS memory compression had hidden it). Reading row groups
+  individually keeps peak at O(row_group * p), independent of the cohort size
+  (verified flat to 32M rows). Peak is now set by the input's largest row
+  group, so write the sorted parquet with modest row groups.
+
 ## [0.1.1] - 2026-06-15
 
 ### Added
@@ -42,5 +64,6 @@ First public release.
 - Dependency-free test suite validating exactness against a plain-NumPy Cox
   Newton-Raphson reference.
 
+[0.2.0]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.2.0
 [0.1.1]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.1.1
 [0.1.0]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.1.0

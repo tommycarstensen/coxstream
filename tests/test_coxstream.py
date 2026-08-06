@@ -53,6 +53,30 @@ def test_handles_ties():
     assert np.max(np.abs(model.coef_ - beta)) < 0.15
 
 
+def test_fit_start_stop_matches_durations():
+    """Passing start/stop must equal passing the precomputed durations."""
+    t, e, X, _ = _simulate(n=5_000, p=3)
+    start = np.full_like(t, 3.0)        # arbitrary common entry; duration = t
+    stop = start + t
+    ref = CoxStream().fit(t, e, X).coef_
+    coef = CoxStream().fit(start=start, stop=stop, events=e, X=X).coef_
+    np.testing.assert_allclose(coef, ref, atol=1e-12)
+
+
+@pytest.mark.parametrize("bad", ["both", "neither", "mismatch", "negative"])
+def test_fit_start_stop_validation(bad):
+    t, e, X, _ = _simulate(n=100, p=2)
+    with pytest.raises(ValueError):
+        if bad == "both":
+            CoxStream().fit(durations=t, start=t, stop=t, events=e, X=X)
+        elif bad == "neither":
+            CoxStream().fit(events=e, X=X)
+        elif bad == "mismatch":
+            CoxStream().fit(start=t, stop=t[:-1], events=e, X=X)
+        else:
+            CoxStream().fit(start=t, stop=t - 1.0, events=e, X=X)
+
+
 @pytest.mark.parametrize("bad", ["1d_X", "mismatched"])
 def test_input_validation(bad):
     t, e, X, _ = _simulate(n=100)
