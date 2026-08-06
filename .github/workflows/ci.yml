@@ -30,7 +30,7 @@ jobs:
 
       - name: Lint
         run: |
-          pip install ruff
+          pip install ruff==0.16.1  # pinned: an unpinned ruff drifts to new rules and breaks CI
           ruff check .
 
       - name: Test

@@ -134,7 +134,7 @@ class CoxStream:
     # Public API
     # ------------------------------------------------------------------
     def fit(self, durations=None, events=None, X=None, feature_names=None,
-            *, start=None, stop=None) -> "CoxStream":
+            *, start=None, stop=None) -> CoxStream:
         """Fit from in-memory arrays.
 
         Provide the follow-up time either directly as ``durations`` or as a
@@ -200,7 +200,7 @@ class CoxStream:
         return self
 
     def fit_parquet(self, path, duration_col, event_col,
-                    covariate_cols, assume_sorted=False) -> "CoxStream":
+                    covariate_cols, assume_sorted=False) -> CoxStream:
         """Fit out-of-core from a Parquet file pre-sorted by descending time.
 
         ``path`` must be a single Parquet file already sorted by ``duration_col``

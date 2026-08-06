@@ -145,9 +145,10 @@ def test_check_sorted_dry_run(tmp_path):
     pytest.importorskip("pyarrow")
     import pyarrow as pa
     import pyarrow.parquet as pq
+
     from coxstream import check_sorted
 
-    t, e, X, _ = _simulate(n=8_000, p=2)
+    t, e, _, _ = _simulate(n=8_000, p=2)
     order = np.argsort(t, kind="stable")
 
     asc = tmp_path / "asc.parquet"
