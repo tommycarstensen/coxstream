@@ -23,6 +23,23 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Citation metadata version matches pyproject
+        # Zenodo labels each archived release from .zenodo.json, so a stale
+        # version there mislabels the record (v0.2.0 was archived as "0.1.1").
+        run: |
+          python - <<'EOF'
+          import json
+          import re
+          from pathlib import Path
+          pkg = re.search(r'^version\s*=\s*"([^"]+)"', Path("pyproject.toml").read_text(), re.M).group(1)
+          cff = re.search(r'^version:\s*"([^"]+)"', Path("CITATION.cff").read_text(), re.M).group(1)
+          zen = json.loads(Path(".zenodo.json").read_text())["version"]
+          ini = re.search(r'^__version__ = "([^"]+)"', Path("src/coxstream/__init__.py").read_text(), re.M).group(1)
+          if not pkg == cff == zen == ini:
+              raise SystemExit(f"version mismatch: pyproject {pkg}, CITATION.cff {cff}, .zenodo.json {zen}, __init__ {ini}")
+          print(f"citation metadata matches version {pkg}")
+          EOF
+
       - name: Install (compiles the Cython kernel) with test + parquet extras
         run: |
           python -m pip install --upgrade pip

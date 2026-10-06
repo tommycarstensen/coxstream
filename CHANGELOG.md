@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-10-06
+
+### Added
+
+- `standard_errors_` and `variance_matrix_`: model-based inference from the observed information at the final estimate. That information is accumulated in the last pass anyway, so it costs no extra pass over the data.
+- `n_passes_`: the number of full passes over the data, so the I/O cost of a fit is visible.
+- `converged_`, and a `RuntimeWarning` when the fit stops at `max_iter` without converging (it used to return the last iterate silently).
+
+### Changed
+
+- One pass over the data per Newton-Raphson iteration instead of two. The line search evaluated the trial point with a full pass and then discarded its score and information, so the next iteration re-read the data at the same point; the accepted trial pass is now reused.
+
+### Fixed
+
+- Covariates are centred internally (Cox estimates and standard errors are invariant to shifting a covariate by a constant). Uncentred covariates such as calendar years made `exp(x'beta)` overflow on the first Newton step, so the fit returned NaN after exhausting the line search, and lost up to eight digits in the standard errors before that. `fit` centres on the column means; `fit_parquet` on the first row group's means, at no extra pass.
+- A Newton step whose line search exhausted all 15 halvings no longer counts as convergence. The fit then takes the 2^-15 step anyway, and when that step was shorter than `tol` it stopped with `converged_` set and no warning, although the log-likelihood had not risen; it now carries on and warns if it reaches `max_iter`.
+- NaN or infinite durations or covariates raise `ValueError` (checked on the first pass only) instead of propagating into NaN estimates, and a fit that still diverges raises `FloatingPointError` instead of returning NaN.
+- The line search no longer backtracks on rounding noise at convergence. It accepted a step only if the log-likelihood fell by less than an absolute 1e-10, which is below the summation rounding of a log-likelihood of order 1e5; on a 20,000-row test fit it spent 7 extra passes halving the final step. The tolerance is now relative (1e-12 x |log-likelihood|), the fit takes exactly one pass per iteration plus one, and the final full step lands on the MLE (4e-11 from an independent reference before, 8e-16 now). Fits that did not backtrack spuriously have identical iterates and estimates.
+
 ## [0.2.0] - 2026-08-05
 
 ### Added
@@ -64,6 +83,7 @@ First public release.
 - Dependency-free test suite validating exactness against a plain-NumPy Cox
   Newton-Raphson reference.
 
+[0.3.0]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.3.0
 [0.2.0]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.2.0
 [0.1.1]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.1.1
 [0.1.0]: https://github.com/tommycarstensen/coxstream/releases/tag/v0.1.0

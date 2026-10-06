@@ -46,8 +46,10 @@ import numpy as np
 from coxstream import CoxStream
 
 model = CoxStream().fit(durations, events, X, feature_names=names)
-print(model.coef_, model.n_iter_)
+print(model.coef_, model.standard_errors_, model.n_iter_)
 ```
+
+`standard_errors_` and `variance_matrix_` come from the observed information accumulated in the final pass, so they cost no extra pass over the data; `n_passes_` reports how many full passes the fit made (one per iteration plus one).
 
 If your cohort records interval endpoints rather than a precomputed follow-up
 time, pass `start`/`stop` and the duration is `stop - start` (right-censored

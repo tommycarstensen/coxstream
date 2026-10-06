@@ -6,10 +6,10 @@
   "creators": [
     {
       "name": "Carstensen, Tommy",
-      "orcid": "0000-0002-3672-9931",
-      "affiliation": "Benros Research Group"
+      "orcid": "0000-0002-3672-9931"
     }
   ],
+  "version": "0.3.0",
   "keywords": [
     "survival analysis",
     "Cox proportional hazards",
